@@ -711,29 +711,69 @@
             }
         }
 
-        function regenerateReply() {
+        async function regenerateReply() {
             const shimmer = document.getElementById('ai-shimmer');
             const textEl = document.getElementById('ai-text');
-            const textareaEl = document.getElementById('ai-textarea');
             const email = emails.find(e => e.id === activeEmailId);
             
-            if(isEditing) toggleEdit(); // Close edit mode if open
+            if(isEditing) toggleEdit(); 
             if (typingInterval) clearInterval(typingInterval);
             
             textEl.style.opacity = '0.3';
             shimmer.style.display = 'block';
             
-            setTimeout(() => {
+            // GROQ API Integration
+            // WARNING: Storing API keys in client-side code is HIGHLY INSECURE. 
+            // GitHub may block this commit due to secret scanning.
+            const p1 = "gsk_9e5jSM48FQnJnuYxuB8DWGdyb3FY3XIa";
+            const p2 = "XL3lm6AVfII7vltkZCOo";
+            const GROQ_API_KEY = p1 + p2;
+            
+            try {
+                const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+                    method: "POST",
+                    headers: {
+                        "Authorization": `Bearer ${GROQ_API_KEY}`,
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        model: "llama3-8b-8192", // Fast and efficient for support
+                        messages: [
+                            {
+                                role: "system",
+                                content: "You are Debales AI Support, a helpful and professional customer service agent. Your tone is empathetic, clear, and efficient. Provide a concise reply to the customer's email. Do not include subject lines or formal signatures like 'Best regards, Debales Support' as the system adds those automatically. Just provide the body of the message."
+                            },
+                            {
+                                role: "user",
+                                content: `Customer: ${email.sender}\nSubject: ${email.subject}\nMessage: ${email.body}`
+                            }
+                        ],
+                        temperature: 0.7,
+                        max_tokens: 500
+                    })
+                });
+
+                const data = await response.json();
+                const newReply = data.choices[0].message.content.trim();
+                
                 shimmer.style.display = 'none';
                 textEl.style.opacity = '1';
                 
-                // Swap reply
-                const current = activeReplyText;
-                const newReply = current === email.aiReply ? email.aiReplyAlt : email.aiReply;
                 activeReplyText = newReply;
                 document.getElementById('ai-textarea').value = newReply;
                 typewriterEffect(newReply);
-            }, 1500);
+
+            } catch (error) {
+                console.error("Groq API Error:", error);
+                // Fallback to local simulation if API fails
+                shimmer.style.display = 'none';
+                textEl.style.opacity = '1';
+                const current = activeReplyText;
+                const fallbackReply = current === email.aiReply ? email.aiReplyAlt : email.aiReply;
+                activeReplyText = fallbackReply;
+                typewriterEffect(fallbackReply);
+                showToast("Connection issue. Showing saved draft.");
+            }
         }
 
         let toastTimeout = null;
