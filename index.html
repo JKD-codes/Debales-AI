@@ -797,17 +797,7 @@
                         <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
                     </svg> Sent</span>
             </div>
-            <div class="nav-item" onclick="switchFolder('drafts', this)">
-                <span style="display: flex; align-items: center; gap: 8px;"><svg width="18" height="18"
-                        viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                        stroke-linejoin="round">
-                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                        <polyline points="14 2 14 8 20 8"></polyline>
-                        <line x1="16" y1="13" x2="8" y2="13"></line>
-                        <line x1="16" y1="17" x2="8" y2="17"></line>
-                        <polyline points="10 9 9 9 8 9"></polyline>
-                    </svg> Drafts</span>
-            </div>
+
         </div>
         <div class="footer">
             <div style="margin-bottom: 16px; display: flex; justify-content: center;">
@@ -1110,13 +1100,7 @@
             time: "Oct 20", tag: "🟢 General Inquiry", tagClass: "general", reason: "<ul><li>Standard support reply</li></ul>",
             aiReply: "Hi Alex, hope that helped. Let me know if you need anything else.", aiReplyAlt: "", unread: false, resolved: true
         });
-        emails.push({
-            id: 8, folder: 'drafts', sender: "Maria Garcia", company: "Individual", email: "maria.g@gmail.com",
-            subject: "Feedback on the new dashboard", preview: "Hi Maria, We really appreciate your feedback...",
-            body: "Hi Maria,\n\nWe really appreciate your feedback on the new dashboard. Our product team is currently reviewing your suggestions for the next sprint.",
-            time: "Oct 21", tag: "🟢 General Inquiry", tagClass: "general", reason: "<ul><li>Draft in progress</li></ul>",
-            aiReply: "Hi Maria,\n\nWe really appreciate your feedback on the new dashboard. Our product team is currently reviewing your suggestions for the next sprint.\n\nBest,\nSupport", aiReplyAlt: "", unread: false, resolved: false
-        });
+
 
         let activeEmailId = null;
         let currentFolder = 'inbox';
@@ -1179,7 +1163,7 @@
             const headerTitle = document.getElementById('folder-title');
             if (folder === 'inbox') headerTitle.innerText = 'Inbox';
             if (folder === 'sent') headerTitle.innerText = 'Sent';
-            if (folder === 'drafts') headerTitle.innerText = 'Drafts';
+
 
             document.getElementById('empty-state').style.display = 'flex';
             document.getElementById('detail-content').classList.remove('visible');
