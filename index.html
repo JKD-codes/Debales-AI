@@ -1,0 +1,787 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debales AI — SmartSupport</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg width='32' height='32' viewBox='0 0 32 32' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cdefs%3E%3ClinearGradient id='grad1' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%23818CF8' /%3E%3Cstop offset='100%25' stop-color='%234F46E5' /%3E%3C/linearGradient%3E%3ClinearGradient id='grad2' x1='100%25' y1='100%25' x2='0%25' y2='0%25'%3E%3Cstop offset='0%25' stop-color='%23C7D2FE' /%3E%3Cstop offset='100%25' stop-color='%236366F1' /%3E%3C/linearGradient%3E%3C/defs%3E%3Cpath d='M6 6h10c6.627 0 12 5.373 12 12s-5.373 12-12 12H6V6z' fill='url(%23grad1)'/%3E%3Cpath d='M12 12h4c3.314 0 6 2.686 6 6s-2.686 6-6 6h-4v-12z' fill='white'/%3E%3Ccircle cx='24' cy='8' r='4' fill='url(%23grad2)'/%3E%3C/svg%3E">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* CSS */
+        :root {
+            --sidebar-bg: #0F172A;
+            --sidebar-text: #94A3B8;
+            --sidebar-active: #1E293B;
+            --sidebar-active-text: #FFFFFF;
+            --primary: #6366F1;
+            --primary-hover: #4F46E5;
+            --bg-light: #F8FAFC;
+            --border: #E2E8F0;
+            --text-main: #0F172A;
+            --text-muted: #64748B;
+            
+            --tag-refund-bg: #FEE2E2; --tag-refund-text: #991B1B;
+            --tag-order-bg: #FFEDD5; --tag-order-text: #9A3412;
+            --tag-general-bg: #DCFCE7; --tag-general-text: #166534;
+            --tag-tech-bg: #DBEAFE; --tag-tech-text: #1E40AF;
+            --tag-billing-bg: #F3E8FF; --tag-billing-text: #6B21A8;
+            --tag-shipping-bg: #FEF9C3; --tag-shipping-text: #854D0E;
+            
+            --card-bg: #FFFFFF;
+            --main-bg: #FFFFFF;
+            --ai-bg: #EEF2FF;
+            --ai-border: #C7D2FE;
+            --text-thread: #334155;
+            --text-ai: #1E293B;
+            --shimmer-1: #EEF2FF;
+            --shimmer-2: #E0E7FF;
+        }
+
+        [data-theme="dark"] {
+            --sidebar-bg: #030712;
+            --sidebar-text: #9CA3AF;
+            --sidebar-active: #1F2937;
+            --sidebar-active-text: #F9FAFB;
+            --bg-light: #111827;
+            --border: #1F2937;
+            --text-main: #F9FAFB;
+            --text-muted: #9CA3AF;
+            --card-bg: #030712;
+            --main-bg: #030712;
+            
+            --ai-bg: #1E1B4B;
+            --ai-border: #312E81;
+            --text-thread: #E5E7EB;
+            --text-ai: #E0E7FF;
+            --shimmer-1: #1E1B4B;
+            --shimmer-2: #312E81;
+            
+            --tag-refund-bg: #450A0A; --tag-refund-text: #FCA5A5;
+            --tag-order-bg: #431407; --tag-order-text: #FDBA74;
+            --tag-general-bg: #052E16; --tag-general-text: #86EFAC;
+            --tag-tech-bg: #172554; --tag-tech-text: #93C5FD;
+            --tag-billing-bg: #3B0764; --tag-billing-text: #D8B4FE;
+            --tag-shipping-bg: #422006; --tag-shipping-text: #FDE047;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+        body { display: flex; height: 100vh; background: var(--main-bg); color: var(--text-main); overflow: hidden; transition: background 0.3s, color 0.3s; }
+
+        /* Sidebar */
+        .sidebar { width: 240px; background: var(--sidebar-bg); display: flex; flex-direction: column; }
+        .logo-area { padding: 24px; color: white; font-weight: 700; font-size: 1.1rem; display: flex; align-items: center; gap: 8px; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        .logo-area span { color: var(--primary); }
+        .nav-menu { padding: 16px 8px; flex: 1; }
+        .nav-item { padding: 12px 16px; margin-bottom: 4px; border-radius: 8px; cursor: pointer; color: var(--sidebar-text); display: flex; justify-content: space-between; align-items: center; transition: all 0.2s ease; font-weight: 500; }
+        .nav-item:hover { background: rgba(255,255,255,0.05); color: white; }
+        .nav-item.active { background: var(--sidebar-active); color: var(--sidebar-active-text); }
+        .badge { background: var(--primary); color: white; font-size: 0.75rem; padding: 2px 8px; border-radius: 12px; font-weight: 600; }
+        .footer { padding: 24px; color: #475569; font-size: 0.75rem; text-align: center; }
+
+        /* Inbox Panel */
+        .inbox-panel { width: 380px; border-right: 1px solid var(--border); display: flex; flex-direction: column; background: var(--bg-light); flex-shrink: 0; transition: background 0.3s, border 0.3s; }
+        .inbox-header { padding: 24px; border-bottom: 1px solid var(--border); background: var(--main-bg); transition: background 0.3s, border 0.3s; }
+        .inbox-header h2 { font-size: 1.25rem; font-weight: 600; margin-bottom: 16px; }
+        .search-bar { width: 100%; padding: 10px 16px; border-radius: 8px; border: 1px solid var(--border); outline: none; transition: border 0.2s, background 0.3s; font-size: 0.9rem; background: var(--card-bg); color: var(--text-main); }
+        .search-bar:focus { border-color: var(--primary); }
+        
+        .email-list { flex: 1; overflow-y: auto; }
+        .email-card { padding: 16px 24px; border-bottom: 1px solid var(--border); cursor: pointer; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); background: var(--card-bg); border-left: 3px solid transparent; }
+        .email-card:hover { background: var(--bg-light); }
+        .email-card.active { background: var(--ai-bg); border-left-color: var(--primary); box-shadow: 0 4px 15px rgba(0,0,0,0.05); transform: translateY(-1px); z-index: 2; position: relative; }
+        .email-card.unread .sender { font-weight: 800; color: var(--text-main); }
+        .email-card.unread .subject { font-weight: 600; color: var(--text-main); }
+        
+        .email-top { display: flex; justify-content: space-between; margin-bottom: 4px; align-items: baseline; }
+        .sender { font-size: 0.95rem; font-weight: 700; color: var(--text-main); }
+        .time { font-size: 0.75rem; color: var(--text-muted); }
+        .subject { font-size: 0.95rem; margin-bottom: 6px; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .preview { font-size: 0.85rem; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 12px; }
+        
+        .tag-row { display: flex; align-items: center; gap: 6px; }
+        .tag { font-size: 0.7rem; font-weight: 600; padding: 4px 8px; border-radius: 6px; display: inline-flex; align-items: center; gap: 4px; }
+
+        
+        /* Colors for tags */
+        .tag.refund { background: var(--tag-refund-bg); color: var(--tag-refund-text); }
+        .tag.order { background: var(--tag-order-bg); color: var(--tag-order-text); }
+        .tag.general { background: var(--tag-general-bg); color: var(--tag-general-text); }
+        .tag.tech { background: var(--tag-tech-bg); color: var(--tag-tech-text); }
+        .tag.billing { background: var(--tag-billing-bg); color: var(--tag-billing-text); }
+        .tag.shipping { background: var(--tag-shipping-bg); color: var(--tag-shipping-text); }
+        
+        .resolved-mark { display: none; color: #10B981; margin-left: auto; }
+        .email-card.resolved .resolved-mark { display: inline-block; }
+
+        /* Sorting and Filtering */
+        .inbox-controls { padding: 0 24px 16px 24px; border-bottom: 1px solid var(--border); background: var(--main-bg); }
+        .filter-tabs { display: flex; gap: 16px; margin-bottom: 16px; border-bottom: 1px solid var(--border); padding-bottom: 8px; }
+        .filter-tab { font-size: 0.85rem; font-weight: 600; color: var(--text-muted); cursor: pointer; padding: 4px 0; position: relative; transition: color 0.2s; }
+        .filter-tab:hover { color: var(--text-main); }
+        .filter-tab.active { color: var(--primary); }
+        .filter-tab.active::after { content: ''; position: absolute; bottom: -9px; left: 0; right: 0; height: 2px; background: var(--primary); border-radius: 2px; }
+        
+        .sort-row { display: flex; justify-content: space-between; align-items: center; }
+        .sort-select { background: transparent; border: none; color: var(--text-muted); font-size: 0.8rem; font-weight: 600; cursor: pointer; outline: none; display: flex; align-items: center; gap: 4px; padding: 4px 8px; border-radius: 4px; }
+        .sort-select:hover { background: var(--bg-light); color: var(--text-main); }
+        .sort-select option { background: var(--card-bg); color: var(--text-main); }
+
+        .urgency-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+        .urgency-high { background: #EF4444; box-shadow: 0 0 8px rgba(239, 68, 68, 0.5); }
+        .urgency-med { background: #F59E0B; }
+        .urgency-low { background: #10B981; }
+
+        /* Detail Panel */
+        .detail-panel { flex: 1; display: flex; flex-direction: column; background: var(--main-bg); overflow: hidden; transition: background 0.3s; }
+        .top-stats { background: var(--main-bg); padding: 12px 24px; border-bottom: 1px solid var(--border); font-size: 0.85rem; color: var(--text-muted); display: flex; gap: 24px; align-items: center; justify-content: flex-end; flex-shrink: 0; transition: background 0.3s, border 0.3s; }
+        
+        .detail-content { flex: 1; overflow-y: auto; padding: 32px 48px; display: none; flex-direction: column; }
+        .detail-content.visible { display: flex; animation: fadeIn 0.3s ease; }
+        
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .thread-header { margin-bottom: 24px; }
+        .thread-subject { font-size: 1.5rem; font-weight: 700; margin-bottom: 16px; }
+        .thread-meta { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 16px; }
+        .thread-sender { display: flex; gap: 12px; align-items: center; }
+        .avatar { width: 40px; height: 40px; border-radius: 50%; background: var(--bg-light); display: flex; align-items: center; justify-content: center; font-weight: 600; color: var(--primary); font-size: 1.1rem; }
+        
+        .thread-body { font-size: 0.95rem; line-height: 1.6; color: var(--text-thread); margin-bottom: 16px; white-space: pre-wrap; }
+        
+        /* AI Section */
+        .ai-section { background: var(--ai-bg); border-radius: 12px; border: 1px solid var(--ai-border); padding: 24px; position: relative; transition: all 0.2s ease; margin-bottom: 32px; }
+        .ai-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+        .ai-title { font-weight: 600; color: var(--primary); display: flex; align-items: center; gap: 8px; }
+        .ai-banner { font-size: 0.75rem; color: var(--primary); background: var(--card-bg); padding: 4px 10px; border-radius: 20px; font-weight: 500; border: 1px solid var(--ai-border); }
+        
+        .ai-reply-container { margin-bottom: 24px; position: relative; }
+        .ai-reply-text { font-size: 0.95rem; line-height: 1.6; color: var(--text-ai); white-space: pre-wrap; }
+        .ai-reply-textarea { width: 100%; height: 200px; padding: 12px; border: 1px solid var(--primary); border-radius: 8px; font-size: 0.95rem; line-height: 1.6; color: var(--text-ai); background: var(--card-bg); font-family: inherit; resize: vertical; display: none; outline: none; }
+        
+        .ai-actions { display: flex; gap: 12px; }
+        .btn { padding: 10px 18px; border-radius: 8px; font-size: 0.9rem; font-weight: 600; cursor: pointer; transition: all 0.2s ease; display: inline-flex; align-items: center; gap: 8px; border: none; }
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-primary:hover { background: var(--primary-hover); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2); }
+        .btn-outline { background: var(--card-bg); color: var(--text-main); border: 1px solid var(--border); }
+        .btn-outline:hover { border-color: var(--text-muted); }
+        .btn-ghost { background: transparent; color: var(--text-muted); }
+        .btn-ghost:hover { background: rgba(0,0,0,0.05); color: var(--text-main); }
+        
+        /* Shimmer Loading */
+        .shimmer { position: absolute; inset: 0; background: linear-gradient(90deg, var(--shimmer-1) 25%, var(--shimmer-2) 50%, var(--shimmer-1) 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; border-radius: 8px; display: none; z-index: 10; }
+        @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+        
+        /* Tag Explanation */
+        .tag-explanation { margin-bottom: 32px; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; background: var(--card-bg); }
+        .tag-exp-header { padding: 12px 16px; font-size: 0.85rem; font-weight: 600; cursor: pointer; display: flex; justify-content: space-between; background: var(--bg-light); color: var(--text-main); transition: background 0.2s; align-items: center;}
+        .tag-exp-header:hover { background: var(--border); }
+        .tag-exp-body { padding: 16px; font-size: 0.85rem; color: var(--text-muted); display: none; border-top: 1px solid var(--border); }
+        .tag-exp-body ul { padding-left: 20px; margin-top: 8px; }
+        .tag-exp-body li { margin-bottom: 4px; }
+        .tag-explanation.open .tag-exp-body { display: block; }
+        .tag-explanation.open .chevron { transform: rotate(180deg); }
+        .chevron { transition: transform 0.2s; }
+
+        /* Toast */
+        .toast { position: fixed; bottom: 24px; right: 24px; background: #1E293B; color: white; padding: 16px 24px; border-radius: 8px; font-weight: 500; display: flex; align-items: center; gap: 12px; transform: translateY(100px); opacity: 0; transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55); z-index: 50; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
+        .toast.show { transform: translateY(0); opacity: 1; }
+
+        .empty-state { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: var(--text-muted); gap: 16px; flex: 1;}
+        .empty-state svg { width: 64px; height: 64px; opacity: 0.2; }
+    </style>
+</head>
+<body>
+
+    <!-- Panel 1: Sidebar -->
+    <div class="sidebar">
+        <div class="logo-area">
+            <svg width="28" height="28" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="#818CF8" />
+                  <stop offset="100%" stop-color="#4F46E5" />
+                </linearGradient>
+                <linearGradient id="grad2" x1="100%" y1="100%" x2="0%" y2="0%">
+                  <stop offset="0%" stop-color="#C7D2FE" />
+                  <stop offset="100%" stop-color="#6366F1" />
+                </linearGradient>
+              </defs>
+              <path d="M6 6h10c6.627 0 12 5.373 12 12s-5.373 12-12 12H6V6z" fill="url(#grad1)"/>
+              <path d="M12 12h4c3.314 0 6 2.686 6 6s-2.686 6-6 6h-4v-12z" fill="white"/>
+              <circle cx="24" cy="8" r="4" fill="url(#grad2)"/>
+            </svg>
+            Debales AI
+        </div>
+        <div class="nav-menu">
+            <div class="nav-item active" onclick="switchFolder('inbox', this)">
+                <span style="display: flex; align-items: center; gap: 8px;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"></polyline><path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"></path></svg> Inbox</span>
+                <span class="badge" id="unread-badge">14</span>
+            </div>
+            <div class="nav-item" onclick="switchFolder('sent', this)">
+                <span style="display: flex; align-items: center; gap: 8px;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg> Sent</span>
+            </div>
+            <div class="nav-item" onclick="switchFolder('drafts', this)">
+                <span style="display: flex; align-items: center; gap: 8px;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg> Drafts</span>
+            </div>
+        </div>
+        <div class="footer">
+            <div style="margin-bottom: 16px; display: flex; justify-content: center;">
+                <label onclick="toggleTheme()" style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 0.85rem; color: var(--sidebar-text);">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+                    <div style="width: 36px; height: 20px; background: rgba(255,255,255,0.1); border-radius: 20px; position: relative; transition: 0.3s;">
+                        <div id="theme-knob" style="width: 14px; height: 14px; background: white; border-radius: 50%; position: absolute; top: 3px; left: 3px; transition: 0.3s;"></div>
+                    </div>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+                </label>
+            </div>
+            Powered by Debales AI
+        </div>
+    </div>
+
+    <!-- Panel 2: Inbox -->
+        <div class="inbox-panel">
+            <div class="inbox-header">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                    <h2 id="folder-title" style="margin-bottom: 0;">Inbox</h2>
+                    <div class="sort-row">
+                        <select class="sort-select" id="sort-select" onchange="handleSort(this.value)">
+                            <option value="newest">Newest First</option>
+                            <option value="priority">Unread First</option>
+                            <option value="sender">Sender (A-Z)</option>
+                        </select>
+                    </div>
+                </div>
+                <input type="text" class="search-bar" id="search-input" placeholder="Search emails..." oninput="handleSearch(this.value)">
+            </div>
+            <div class="inbox-controls">
+                <div class="filter-tabs">
+                    <div class="filter-tab active" onclick="handleFilter('all', this)">All</div>
+                    <div class="filter-tab" onclick="handleFilter('unread', this)">Waiting</div>
+                    <div class="filter-tab" onclick="handleFilter('resolved', this)">Resolved</div>
+                </div>
+            </div>
+            <div class="email-list" id="email-list">
+                <!-- Emails injected by JS -->
+            </div>
+        </div>
+
+    <!-- Panel 3: Detail -->
+    <div class="detail-panel">
+        <div class="top-stats">
+            <span style="display:flex;align-items:center;gap:6px;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg> 14 emails today</span>
+            <span id="resolved-count" style="display:flex;align-items:center;gap:6px;color:#10B981;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg> 9 auto-resolved</span>
+            <span style="display:flex;align-items:center;gap:6px;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg> Avg reply time: 1.4s</span>
+        </div>
+        
+        <div class="empty-state" id="empty-state">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" /></svg>
+            <h3>Select an email to view</h3>
+        </div>
+
+        <div class="detail-content" id="detail-content">
+            <div class="thread-header">
+                <h1 class="thread-subject" id="d-subject">Subject</h1>
+                <div class="thread-meta">
+                    <div class="thread-sender">
+                        <div class="avatar" id="d-avatar">A</div>
+                        <div>
+                            <div style="font-weight: 600; color: var(--text-main);" id="d-sender">Sender</div>
+                            <div style="font-size: 0.85rem; color: var(--text-muted);" id="d-email">sender@email.com</div>
+                        </div>
+                    </div>
+                    <div style="font-size: 0.85rem; color: var(--text-muted);" id="d-time">Time</div>
+                </div>
+            </div>
+            
+            <div class="thread-body" id="d-body">Body</div>
+
+            <div class="tag-explanation" id="d-tag-container">
+                <div class="tag-exp-header" onclick="this.parentElement.classList.toggle('open')">
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <span id="d-tag-badge" class="tag">Tag</span>
+                        <span>Why did AI tag this?</span>
+                    </div>
+                    <svg class="chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+                </div>
+                <div class="tag-exp-body" id="d-tag-reason">Reason</div>
+            </div>
+
+            <div class="ai-section" id="ai-section">
+                <div class="ai-header">
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <div class="ai-title">AI-Generated Reply</div>
+                        <div style="font-size: 0.75rem; background: rgba(16, 185, 129, 0.1); color: #10B981; padding: 2px 8px; border-radius: 12px; font-weight: 600; display: flex; align-items: center; gap: 4px;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg> 98% Confidence</div>
+                    </div>
+                    <div class="ai-banner">Draft generated in 1.2s by Debales AI</div>
+                </div>
+                
+                <div class="ai-reply-container">
+                    <div id="agent-steps" style="font-family: monospace; font-size: 0.85rem; color: var(--text-muted); display: none; padding-bottom: 12px;"></div>
+                    <div class="shimmer" id="ai-shimmer"></div>
+                    <div class="ai-reply-text" id="ai-text">Reply</div>
+                    <textarea class="ai-reply-textarea" id="ai-textarea"></textarea>
+                </div>
+                
+                <div class="ai-actions">
+                    <button class="btn btn-primary" onclick="approveAndSend()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg> Approve & Send</button>
+                    <button class="btn btn-outline" id="btn-edit" onclick="toggleEdit()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg> Edit Reply</button>
+                    <button class="btn btn-ghost" onclick="regenerateReply()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg> Regenerate</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#10B981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+        <span id="toast-text">Reply sent successfully ✓</span>
+    </div>
+
+    <script>
+        const emails = [
+            {
+                id: 1,
+                sender: "Sarah Mitchell",
+                company: "Individual",
+                email: "sarah.m@example.com",
+                subject: "Order #48291 hasn't arrived — it's been 12 days",
+                preview: "Hi, I placed an order almost two weeks ago and it still hasn't...",
+                body: "Hi team,\n\nI placed order #48291 almost two weeks ago on the 3rd, and it still hasn't arrived. The tracking link hasn't updated in 4 days. Can you please look into this? I needed these items for a trip this weekend.\n\nThanks,\nSarah",
+                time: "10:42 AM",
+                tag: "🟡 Shipping Delay",
+                tagClass: "shipping",
+                reason: "<ul><li>Contains intent: 'hasn\\'t arrived', 'tracking link hasn\\'t updated'</li><li>Identified entity: Order #48291</li><li>Sentiment: Frustrated</li></ul>",
+                aiReply: "Hi Sarah,\n\nI sincerely apologize for the delay with your order #48291. \n\nI've checked with our courier and your package is currently at the local distribution center and is scheduled for delivery tomorrow. We know how frustrating it is when tracking doesn't update, so we're looking into why that happened.\n\nTo make up for this inconvenience, please use the promo code DISCOUNT10 for 10% off your next purchase.\n\nLet me know if you have any other questions!\n\nBest regards,\nCustomer Support",
+                aiReplyAlt: "Hello Sarah,\n\nI am so sorry to hear about the delay with order #48291. \n\nI just tracked the package on our end and it looks like it was held up at a sorting facility. However, it is now out for delivery and should reach you by tomorrow afternoon, well before your trip.\n\nAs an apology for the hassle, I've added a 10% discount to your account for your next order.\n\nBest,\nSupport Team",
+                unread: true,
+                resolved: false,
+                urgency: 'high',
+                timestamp: new Date().getTime() - 1000 * 60 * 15 // 15 mins ago
+            },
+            {
+                id: 2,
+                sender: "James Kowalski",
+                company: "Acme Corp",
+                email: "j.kowalski@acmecorp.com",
+                subject: "I was charged twice for my subscription this month",
+                preview: "Hello, I just checked my credit card statement and noticed...",
+                body: "Hello,\n\nI just checked my credit card statement and noticed I was billed twice for my Pro subscription this month. There are two identical charges of $49.99 on the 14th.\n\nPlease refund one of these immediately.\n\nJames",
+                time: "9:15 AM",
+                tag: "🟣 Billing Issue",
+                tagClass: "billing",
+                reason: "<ul><li>Contains keywords: 'charged twice', 'billed twice', 'refund'</li><li>Category match: Duplicate payment detected</li></ul>",
+                aiReply: "Hi James,\n\nI apologize for the double charge on your account. \n\nI've investigated this and it appears there was a glitch in our payment gateway on the 14th. I have immediately processed a refund for the duplicate $49.99 charge.\n\nYou should see the funds return to your original payment method within 3–5 business days. Your subscription remains active and unaffected.\n\nThank you for bringing this to our attention.\n\nBest,\nCustomer Support",
+                aiReplyAlt: "Hi James,\n\nSorry about the confusion with your billing! \n\nI can confirm that a duplicate charge occurred. I've just initiated a full refund for the extra $49.99. Depending on your bank, it will appear back on your statement in 3 to 5 business days.\n\nLet us know if you need anything else.\n\nBest,\nSupport",
+                unread: true,
+                resolved: false,
+                urgency: 'high',
+                timestamp: new Date().getTime() - 1000 * 60 * 60 * 2 // 2 hours ago
+            },
+            {
+                id: 3,
+                sender: "Priya Nair",
+                company: "DesignCo",
+                email: "priya@designco.io",
+                subject: "The app keeps crashing when I try to upload files",
+                preview: "Hey support, every time I try to upload a PDF larger than...",
+                body: "Hey support,\n\nEvery time I try to upload a PDF larger than 5MB on the web app, the page freezes and then crashes completely. I've tried clearing my cache and using incognito mode, but the issue persists.\n\nThis is completely blocking my workflow right now.\n\nPriya",
+                time: "Yesterday",
+                tag: "🔵 Technical Support",
+                tagClass: "tech",
+                reason: "<ul><li>Contains technical terms: 'crashing', 'upload', 'cache', 'incognito'</li><li>Identified action: File upload failure</li></ul>",
+                aiReply: "Hi Priya,\n\nI'm sorry to hear the app is crashing during file uploads. That definitely sounds frustrating.\n\nTo help us fix this quickly, could you let us know:\n1. Which browser and version you are currently using?\n2. What operating system you are on (Windows/Mac)?\n\nIn the meantime, a workaround is to use our Desktop app if you have it installed. I've also escalated this directly to our engineering team under ticket #ENG-842.\n\nWe will get back to you as soon as we have an update.\n\nBest,\nCustomer Support",
+                aiReplyAlt: "Hi Priya,\n\nSorry you're experiencing this crash! \n\nOur engineering team was just alerted to a potential issue with PDF uploads over 5MB. We are actively investigating.\n\nCould you kindly confirm your OS and browser version so we can try to replicate it perfectly? \n\nI will keep you updated as soon as I hear back from the devs.\n\nBest,\nSupport",
+                unread: false,
+                resolved: false,
+                urgency: 'med',
+                timestamp: new Date().getTime() - 1000 * 60 * 60 * 24 // 1 day ago
+            },
+            {
+                id: 4,
+                sender: "Tom Reynolds",
+                company: "Individual",
+                email: "tom.reynolds@gmail.com",
+                subject: "I want a full refund for my purchase last week",
+                preview: "The product doesn't meet my expectations and I'd like to...",
+                body: "The product doesn't meet my expectations and I'd like to exercise the 30-day money back guarantee. I purchased the annual plan last Tuesday.\n\nPlease process a full refund to my card.\n\nTom",
+                time: "Yesterday",
+                tag: "🔴 Refund Request",
+                tagClass: "refund",
+                reason: "<ul><li>Exact intent match: 'full refund', 'money back guarantee'</li><li>Timeframe extraction: 'last week' -> eligible for 30-day policy</li></ul>",
+                aiReply: "Hi Tom,\n\nI'm sorry to hear the product wasn't the right fit for you. \n\nI can confirm your purchase is within our 30-day money-back guarantee period. I have successfully processed a full refund for your annual plan.\n\nPlease allow 5–7 business days for the funds to appear on your bank statement. Your case number for this refund is #REF-9923.\n\nWe appreciate you giving us a try!\n\nBest,\nCustomer Support",
+                aiReplyAlt: "Hi Tom,\n\nNo problem at all. I'm sorry the product didn't meet your expectations.\n\nI've gone ahead and cancelled your annual plan and initiated a full refund. It usually takes about 5 to 7 business days for the credit to process.\n\nIf you ever decide to give us another try in the future, we'd love to have you back.\n\nBest,\nSupport",
+                unread: false,
+                resolved: false,
+                urgency: 'med',
+                timestamp: new Date().getTime() - 1000 * 60 * 60 * 25 // 25 hours ago
+            },
+            {
+                id: 5,
+                sender: "Aisha Bello",
+                company: "Startup Inc",
+                email: "aisha@startupinc.co",
+                subject: "Can you explain what's included in the Pro plan?",
+                preview: "We are considering upgrading our team account but want...",
+                body: "Hi there,\n\nWe are currently on the Basic plan and are considering upgrading our team account to Pro. However, the pricing page isn't entirely clear on a few things.\n\nCan you explain exactly what's included in the Pro plan regarding API limits and user seats?\n\nThanks,\nAisha",
+                time: "Oct 24",
+                tag: "🟢 General Inquiry",
+                tagClass: "general",
+                reason: "<ul><li>Contains intent: 'considering upgrading', 'what\\'s included'</li><li>Product interest detected: 'Pro plan'</li></ul>",
+                aiReply: "Hi Aisha,\n\nThanks for reaching out! We'd love to have your team on the Pro plan.\n\nHere are the key features included in the Pro upgrade:\n• Unlimited user seats for your team\n• 100,000 API calls per month (compared to 10k on Basic)\n• Priority 24/7 customer support\n• Advanced analytics and reporting dashboards\n\nIf you're ready to upgrade, you can do so directly from your account billing dashboard here: [Link to Upgrade]. \n\nLet me know if you have any other questions!\n\nBest,\nCustomer Support",
+                aiReplyAlt: "Hi Aisha,\n\nGreat question! The Pro plan is perfect for growing teams.\n\nTo clarify your specific questions:\n1. API Limits: You get up to 100,000 requests/month.\n2. User Seats: You can add unlimited team members at no extra cost.\n3. Plus: You get priority support and custom reporting.\n\nYou can upgrade anytime via your Settings > Billing page.\n\nBest,\nSupport",
+                unread: false,
+                resolved: false,
+                urgency: 'low',
+                timestamp: new Date("2026-10-24").getTime()
+            },
+            {
+                id: 6,
+                sender: "Derek Huang",
+                company: "Individual",
+                email: "derek.h@outlook.com",
+                subject: "My discount code SAVE20 isn't working at checkout",
+                preview: "I got an email with the promo code SAVE20 but when I...",
+                body: "I got an email with the promo code SAVE20 but when I enter it at checkout it says 'Invalid code'. I'm trying to buy the premium bundle.\n\nCan someone fix this so I can place my order?\n\nDerek",
+                time: "Oct 23",
+                tag: "🟠 Order Issue",
+                tagClass: "order",
+                reason: "<ul><li>Contains keywords: 'discount code', 'promo code', 'checkout'</li><li>Entity identified: 'SAVE20'</li></ul>",
+                aiReply: "Hi Derek,\n\nI apologize for the trouble with your promo code! \n\nI've checked our system and the SAVE20 code is indeed valid. Sometimes caching issues can cause that error. Could you try applying it in an incognito window or after clearing your browser cache?\n\nIf it still doesn't work, please go ahead and place the order without it, and reply to this email. I will manually refund you the 20% immediately.\n\nBest,\nCustomer Support",
+                aiReplyAlt: "Hi Derek,\n\nSorry about that! The SAVE20 code should definitely be working for the premium bundle.\n\nThere might be a temporary glitch with our checkout system. As a quick workaround, you can complete your purchase at the full price, and if you let me know once it's done, I'll instantly refund the 20% difference back to your card.\n\nLet me know how you'd like to proceed!\n\nBest,\nSupport",
+                unread: false,
+                resolved: false,
+                urgency: 'high',
+                timestamp: new Date("2026-10-23").getTime()
+            }
+        ];
+
+        emails.forEach(e => e.folder = 'inbox');
+        emails.push({
+            id: 7, folder: 'sent', sender: "Alex Carter", company: "Acme Corp", email: "alex@acmecorp.com",
+            subject: "Re: Enterprise License Inquiry", preview: "Hi Alex, Thanks for reaching out about...",
+            body: "Hi Alex,\n\nThanks for reaching out about the Enterprise license.\n\nWe can certainly accommodate a team of 50. I have attached the pricing breakdown.\n\nBest,\nDebales Support",
+            time: "Oct 20", tag: "🟢 General Inquiry", tagClass: "general", reason: "<ul><li>Standard support reply</li></ul>",
+            aiReply: "Hi Alex, hope that helped. Let me know if you need anything else.", aiReplyAlt: "", unread: false, resolved: true
+        });
+        emails.push({
+            id: 8, folder: 'drafts', sender: "Maria Garcia", company: "Individual", email: "maria.g@gmail.com",
+            subject: "Feedback on the new dashboard", preview: "Hi Maria, We really appreciate your feedback...",
+            body: "Hi Maria,\n\nWe really appreciate your feedback on the new dashboard. Our product team is currently reviewing your suggestions for the next sprint.",
+            time: "Oct 21", tag: "🟢 General Inquiry", tagClass: "general", reason: "<ul><li>Draft in progress</li></ul>",
+            aiReply: "Hi Maria,\n\nWe really appreciate your feedback on the new dashboard. Our product team is currently reviewing your suggestions for the next sprint.\n\nBest,\nSupport", aiReplyAlt: "", unread: false, resolved: false
+        });
+
+        let activeEmailId = null;
+        let currentFolder = 'inbox';
+        let isEditing = false;
+        let resolvedCount = 9;
+        let activeReplyText = "";
+        let typingInterval = null;
+        
+        let searchQuery = "";
+        let currentSort = "newest";
+        let currentStatusFilter = "all";
+
+        function handleSearch(val) {
+            searchQuery = val.toLowerCase();
+            renderEmailList();
+        }
+
+        function handleSort(val) {
+            currentSort = val;
+            renderEmailList();
+        }
+
+        function handleFilter(status, el) {
+            currentStatusFilter = status;
+            document.querySelectorAll('.filter-tab').forEach(tab => tab.classList.remove('active'));
+            el.classList.add('active');
+            renderEmailList();
+        }
+
+        function typewriterEffect(text) {
+            const textEl = document.getElementById('ai-text');
+            textEl.innerText = '';
+            let i = 0;
+            if (typingInterval) clearInterval(typingInterval);
+            
+            typingInterval = setInterval(() => {
+                if (i < text.length) {
+                    textEl.innerText += text.charAt(i);
+                    i++;
+                } else {
+                    clearInterval(typingInterval);
+                }
+            }, 10);
+        }
+        
+        function updateStats() {
+            document.getElementById('resolved-count').innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg> ${resolvedCount} auto-resolved`;
+            const unreadCount = emails.filter(e => e.unread && e.folder === 'inbox').length;
+            document.getElementById('unread-badge').innerText = unreadCount;
+            document.getElementById('unread-badge').style.display = unreadCount > 0 ? 'inline-block' : 'none';
+        }
+
+        function switchFolder(folder, element) {
+            currentFolder = folder;
+            
+            const navItems = document.querySelectorAll('.nav-item');
+            navItems.forEach(item => item.classList.remove('active'));
+            if (element) element.classList.add('active');
+            
+            const headerTitle = document.getElementById('folder-title');
+            if (folder === 'inbox') headerTitle.innerText = 'Inbox';
+            if (folder === 'sent') headerTitle.innerText = 'Sent';
+            if (folder === 'drafts') headerTitle.innerText = 'Drafts';
+            
+            document.getElementById('empty-state').style.display = 'flex';
+            document.getElementById('detail-content').classList.remove('visible');
+            activeEmailId = null;
+            if (typingInterval) clearInterval(typingInterval);
+            
+            renderEmailList();
+        }
+
+        function renderEmailList() {
+            const listEl = document.getElementById('email-list');
+            listEl.innerHTML = '';
+            
+            // 1. Filter by folder
+            let filtered = emails.filter(e => {
+                if (currentFolder === 'sent') return e.folder === 'sent' || e.isSent;
+                return e.folder === currentFolder;
+            });
+
+            // 2. Filter by Status (All, Waiting, Resolved)
+            if (currentStatusFilter === 'unread') {
+                filtered = filtered.filter(e => !e.resolved);
+            } else if (currentStatusFilter === 'resolved') {
+                filtered = filtered.filter(e => e.resolved);
+            }
+
+            // 3. Filter by Search
+            if (searchQuery) {
+                filtered = filtered.filter(e => 
+                    e.sender.toLowerCase().includes(searchQuery) || 
+                    e.subject.toLowerCase().includes(searchQuery) || 
+                    e.preview.toLowerCase().includes(searchQuery)
+                );
+            }
+
+            // 4. Sort
+            filtered.sort((a, b) => {
+                if (currentSort === 'newest') {
+                    return (b.timestamp || 0) - (a.timestamp || 0);
+                } else if (currentSort === 'priority') {
+                    // Unread first, then by urgency, then by timestamp
+                    if (a.unread !== b.unread) return a.unread ? -1 : 1;
+                    const urgencyMap = { high: 3, med: 2, low: 1 };
+                    if (urgencyMap[a.urgency] !== urgencyMap[b.urgency]) {
+                        return urgencyMap[b.urgency] - urgencyMap[a.urgency];
+                    }
+                    return (b.timestamp || 0) - (a.timestamp || 0);
+                } else if (currentSort === 'sender') {
+                    return a.sender.localeCompare(b.sender);
+                }
+                return 0;
+            });
+            
+            if (filtered.length === 0) {
+                listEl.innerHTML = '<div style="padding: 24px; text-align: center; color: var(--text-muted); font-size: 0.9rem;">No emails found.</div>';
+            }
+            
+            filtered.forEach(email => {
+                const card = document.createElement('div');
+                card.className = `email-card ${email.unread ? 'unread' : ''} ${email.id === activeEmailId ? 'active' : ''} ${email.resolved ? 'resolved' : ''}`;
+                card.onclick = () => selectEmail(email.id);
+                
+                const urgencyClass = `urgency-${email.urgency || 'low'}`;
+                
+                card.innerHTML = `
+                    <div class="email-top">
+                        <span class="sender"><span class="urgency-dot ${urgencyClass}"></span> ${email.sender}</span>
+                        <span class="time">${email.time}</span>
+                    </div>
+                    <div class="subject">${email.subject}</div>
+                    <div class="preview">${email.preview}</div>
+                    <div class="tag-row">
+                        <span class="tag ${email.tagClass}">${email.tag}</span>
+                        <svg class="resolved-mark" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                    </div>
+                `;
+                listEl.appendChild(card);
+            });
+            updateStats();
+        }
+
+        function selectEmail(id) {
+            activeEmailId = id;
+            const email = emails.find(e => e.id === id);
+            if(email.unread) {
+                email.unread = false; // Mark read
+            }
+            
+            renderEmailList();
+
+            document.getElementById('empty-state').style.display = 'none';
+            const detailEl = document.getElementById('detail-content');
+            detailEl.classList.remove('visible');
+            
+            // Small delay to re-trigger animation
+            setTimeout(() => {
+                document.getElementById('d-subject').innerText = email.subject;
+                document.getElementById('d-avatar').innerText = email.sender.charAt(0);
+                document.getElementById('d-sender').innerText = email.sender;
+                document.getElementById('d-email').innerText = email.email;
+                document.getElementById('d-time').innerText = email.time;
+                document.getElementById('d-body').innerText = email.body;
+                
+                const tagBadge = document.getElementById('d-tag-badge');
+                tagBadge.className = `tag ${email.tagClass}`;
+                tagBadge.innerHTML = email.tag;
+                document.getElementById('d-tag-reason').innerHTML = email.reason;
+                document.getElementById('d-tag-container').classList.remove('open');
+
+                // Reset AI section
+                const aiSection = document.getElementById('ai-section');
+                if (email.folder === 'sent' || email.resolved) {
+                    aiSection.style.display = 'none';
+                } else {
+                    aiSection.style.display = 'block';
+                    isEditing = false;
+                    document.getElementById('ai-textarea').style.display = 'none';
+                    document.getElementById('btn-edit').innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg> Edit Reply';
+                    
+                    const textEl = document.getElementById('ai-text');
+                    const stepsEl = document.getElementById('agent-steps');
+                    const actionsEl = document.querySelector('.ai-actions');
+                    
+                    textEl.style.display = 'none';
+                    actionsEl.style.display = 'none';
+                    stepsEl.style.display = 'block';
+                    stepsEl.innerHTML = '';
+                    
+                    const steps = [
+                        "Analyzing customer intent...",
+                        "Querying Knowledge Base...",
+                        "Drafting personalized response..."
+                    ];
+                    
+                    let stepIdx = 0;
+                    const stepInterval = setInterval(() => {
+                        if (stepIdx < steps.length) {
+                            stepsEl.innerHTML += `<div style="margin-bottom: 4px;"><span style="color:var(--primary); font-weight: bold;">></span> ${steps[stepIdx]}</div>`;
+                            stepIdx++;
+                        } else {
+                            clearInterval(stepInterval);
+                            setTimeout(() => {
+                                stepsEl.style.display = 'none';
+                                textEl.style.display = 'block';
+                                actionsEl.style.display = 'flex';
+                                activeReplyText = email.aiReply;
+                                document.getElementById('ai-textarea').value = activeReplyText;
+                                typewriterEffect(activeReplyText);
+                            }, 400);
+                        }
+                    }, 400);
+                }
+
+                detailEl.classList.add('visible');
+            }, 10);
+        }
+
+        function toggleEdit() {
+            const textEl = document.getElementById('ai-text');
+            const textareaEl = document.getElementById('ai-textarea');
+            const btnEl = document.getElementById('btn-edit');
+            
+            isEditing = !isEditing;
+            
+            if (isEditing) {
+                if (typingInterval) clearInterval(typingInterval); // Stop typing if user clicks edit
+                textEl.style.display = 'none';
+                textareaEl.style.display = 'block';
+                textareaEl.value = activeReplyText;
+                btnEl.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg> Save Changes';
+            } else {
+                activeReplyText = textareaEl.value;
+                textEl.innerText = activeReplyText;
+                textEl.style.display = 'block';
+                textareaEl.style.display = 'none';
+                btnEl.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg> Edit Reply';
+            }
+        }
+
+        function regenerateReply() {
+            const shimmer = document.getElementById('ai-shimmer');
+            const textEl = document.getElementById('ai-text');
+            const textareaEl = document.getElementById('ai-textarea');
+            const email = emails.find(e => e.id === activeEmailId);
+            
+            if(isEditing) toggleEdit(); // Close edit mode if open
+            if (typingInterval) clearInterval(typingInterval);
+            
+            textEl.style.opacity = '0.3';
+            shimmer.style.display = 'block';
+            
+            setTimeout(() => {
+                shimmer.style.display = 'none';
+                textEl.style.opacity = '1';
+                
+                // Swap reply
+                const current = activeReplyText;
+                const newReply = current === email.aiReply ? email.aiReplyAlt : email.aiReply;
+                activeReplyText = newReply;
+                document.getElementById('ai-textarea').value = newReply;
+                typewriterEffect(newReply);
+            }, 1500);
+        }
+
+        let toastTimeout = null;
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            const toastText = document.getElementById('toast-text');
+            if (toastText) toastText.innerText = message;
+            
+            toast.classList.remove('show');
+            setTimeout(() => {
+                toast.classList.add('show');
+                if (toastTimeout) clearTimeout(toastTimeout);
+                toastTimeout = setTimeout(() => {
+                    toast.classList.remove('show');
+                }, 3000);
+            }, 50);
+        }
+
+        function approveAndSend() {
+            // Mark as resolved in list
+            const email = emails.find(e => e.id === activeEmailId);
+            if(email && !email.resolved) {
+                email.resolved = true;
+                email.isSent = true;
+                
+                email.body = `[You sent a reply]:\n\n${activeReplyText}\n\n-------------------------\n[Original message from ${email.sender}]:\n\n${email.body}`;
+                email.preview = activeReplyText.substring(0, 50).replace(/\n/g, ' ') + '...';
+                
+                resolvedCount++;
+                document.getElementById('empty-state').style.display = 'flex';
+                document.getElementById('detail-content').classList.remove('visible');
+                activeEmailId = null;
+                renderEmailList();
+            }
+            
+            showToast('Reply sent successfully ✓');
+        }
+
+        let isDarkMode = false;
+        function toggleTheme() {
+            isDarkMode = !isDarkMode;
+            document.body.setAttribute('data-theme', isDarkMode ? 'dark' : 'light');
+            document.getElementById('theme-knob').style.transform = isDarkMode ? 'translateX(16px)' : 'translateX(0)';
+        }
+
+        // Initialize
+        renderEmailList();
+
+    </script>
+</body>
+</html>
